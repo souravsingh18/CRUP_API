@@ -1,16 +1,48 @@
 const Courses = require('../models/courses');
 
-exports.getAll = (req,res)=>{
-    const result = Courses.find();
-    res.status(200).json({
-        msg: "getCourses"
-    })
+exports.getAll = async (req,res)=>{
+    try{
+        const result = await Courses.find();
+        res.status(200).json({
+            result
+        })
+    }catch(err){
+        console.log(err);
+    }
 }
 
-exports.postCourse = (req,res)=>{
-    const result = Courses.create(req.body)
+exports.postCourse = async (req,res)=>{
+    try{
+        const result = await Courses.create(req.body);
+        res.status(200).json({
+            result
+        })
+    }catch(err){
+        console.log(err);
+    }
+}
 
-    res.status(200).json({
-        data: result
-    })
+exports.updateCourse = async (req,res)=>{
+    const {id} = req.parmas;
+    try{
+        const result = await Courses.findOneAndUpdate({_id: id},req.body,{new: true});
+        res.status(200).json({
+            result
+        })
+    }catch(err){
+        console.log(err);
+    }
+}
+
+exports.deleteCourse = async (req,res)=>{
+    try {
+        console.log(req.body);
+        await Courses.deleteMany()
+    
+        res.status(200).json({
+            data: "All Courses are deleted successfully"
+        })
+    } catch (error) {
+        console.log(error);
+    }
 }

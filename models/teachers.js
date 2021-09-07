@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-// const students = require('../models/students');
 const Schema = mongoose.Schema;
 
 const teachersSchema = mongoose.Schema({
@@ -8,7 +7,7 @@ const teachersSchema = mongoose.Schema({
     },
     courseId: [{ 
             type: Schema.Types.ObjectId,
-            ref: 'students' 
+            ref: 'courses' 
     }]
 
 })
