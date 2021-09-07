@@ -23,14 +23,28 @@ exports.postCourse = async (req,res)=>{
 }
 
 exports.updateCourse = async (req,res)=>{
-    const {id} = req.parmas;
-    try{
-        const result = await Courses.findOneAndUpdate({_id: id},req.body,{new: true});
-        res.status(200).json({
-            result
+    const { id } = req.params
+    try {
+        const course = await Courses.findById(id);
+        const tId = await Courses.findOne({
+            _id: id,
+            "teacherId": req.body.teacherId
         })
-    }catch(err){
-        console.log(err);
+        if(tId) {
+            res.status(200).json({
+                msg: `teacher with ${tId._id} id is already teaching this course`
+            });
+        } else {
+            course.teacherId = req.body.teacherId;
+            const result = await Courses.findOneAndUpdate({_id:id},course,{new: true});
+            res.status(200).json({
+                result
+        })
+        }
+    } catch (error) {
+        res.status(500).json({
+            error: "Internal server error --> updateCourse"
+        });
     }
 }
 

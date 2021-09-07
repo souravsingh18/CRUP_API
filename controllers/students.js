@@ -2,16 +2,31 @@ const Students = require('../models/students');
 
 exports.getStudents = async (req,res)=>{
     try{
-        const result = await Students.find()
-        // const result = await Students.aggregate([
-        //     {
-        //         $unwind: "$courseId"
-        //     },
-        //     // {$group:{_id: "$courseId"}},
+        // const result = await Students.find()
+        const studentDetails = await Students.aggregate([
+            // {
+            //     $unwind: "$courseId"
+            // },
+            // {$group:{_id: "$courseId"}},
+            {
+                $lookup:{
+                    from: "courses",
+                    localField: "courseId",
+                    foreignField: "_id",
+                    as: "courseDetails"
+                }
+            },
+            {
+                $project:{
+                    StudentName: "$name",
+                    courseName: "$courseDetails.name",
+                    teacherId: "$courseDetails.teacherId",
+                }
+            }
 
-        // ])
+        ])
         res.status(200).json({
-            result
+            studentDetails
         })
     }catch(err){
         res.status(500).json({
@@ -38,18 +53,16 @@ exports.postStudentData = async (req,res)=>{
 exports.updateStudent = async (req,res)=>{
     const { id } = req.params
     try {
-        const student = await Students.findOne({
+        const student = await Students.findById(id);
+        const cId = await Students.findOne({
             _id: id,
             "courseId": req.body.courseId
         })
-        console.log(student);
-        if(student) {
+        if(cId) {
             res.status(200).json({
                 msg: "you already enrolled for this course"
             });
         } else {
-            //student does not exist 
-            console.log("updateone");
             student.courseId.push(req.body.courseId);
             const result = await Students.findOneAndUpdate({_id:id},student,{new: true});
             res.status(200).json({
