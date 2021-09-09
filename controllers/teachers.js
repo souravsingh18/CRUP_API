@@ -1,11 +1,44 @@
-const Teachers = require('../models/teachers');
+const mongoose  = require('mongoose');
+const {Teachers} = require('../models/index');
 
 exports.getTeachers = async (req,res)=>{
     try{
         const result = await Teachers.find();
-        res.status(200).json({
-            data: result
-        })
+        if(result.length) {
+            res.status(200).json({
+                data: result || {}
+            })
+        } else {
+            res.status(500).json({
+                msg: "data not found"
+            })
+        }
+
+    }catch(err){
+        console.log(err);
+    }
+}
+
+exports.getTeacherDetails = async (req,res)=>{
+    const {id} = req.params;
+    console.log(id,mongoose.Types.ObjectId(id));
+    try{
+        const result = await Teachers.aggregate([
+            {$match: {
+                _id: mongoose.Types.ObjectId(id)
+
+            }}
+        ]);
+        if(result.length) {
+            res.status(200).json({
+                data: result || {}
+            })
+        } else {
+            res.status(500).json({
+                msg: "data not found"
+            })
+        }
+
     }catch(err){
         console.log(err);
     }
@@ -13,7 +46,7 @@ exports.getTeachers = async (req,res)=>{
 
 exports.postTeacher = async (req,res)=>{
     try{
-        const result = await Teachers.post(req.body);
+        const result = await Teachers.create(req.body);
         res.status(200).json({
             data: result
         })
@@ -34,12 +67,23 @@ exports.updateTeacher = async (req,res)=>{
     }
 }
 
-
 exports.deleteTeachers = async (req,res)=>{
     try{
         await Teachers.deleteMany();
         res.status(200).json({
-            msg:"successfully deleted"
+            msg:"successfully deletion"
+        })
+    }catch(err){
+        console.log(err);
+    }
+}
+
+exports.deleteOne = async (req,res)=>{
+    const {id} = req.params;
+    try{
+        await Teachers.deleteOne({_id: id});
+        res.status(200).json({
+            msg: `Id ${id} deleted successfully`
         })
     }catch(err){
         console.log(err);

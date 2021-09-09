@@ -1,9 +1,9 @@
-// // groups
-// // {
-// //     _id:1;
-// //     groupName: "A",
-// //     studentEnrolledId: [1,2,3,...]
-// // }
+// groups
+// {
+//     _id:1;
+//     groupName: "A",
+//     studentEnrolledId: [1,2,3,...]
+// }
 
 // students
 // {
@@ -17,7 +17,7 @@
 // {
 //     _id: 1;
 //     courseName: "Math";
-//     // 1:few
+    // 1:few
 //     teacherId: 1;
 //     studentId: [1,2,3,...]
 // }
@@ -26,16 +26,18 @@
 // {
 //     _id: 1;
 //     teacherName: "abc";
-//     // 1:few < 16MB
+    // 1:few < 16MB
 //     courseId: 1;
-//     // group: [1]
+    // group: [1]
 //     sudents: []
 // }
 
-// QUERY
-// // --------------------------------------------------------------------
 
-// // Q. find the subjects teach by teacherId: 1
+
+// QUERY
+// --------------------------------------------------------------------
+
+// Q. find the subjects teach by teacherId: 1
 
 // const a = teachers.find();
 // a.students
@@ -53,9 +55,9 @@
 // ])
 
 
-// // -----------------------------------------------------------------------
+// -----------------------------------------------------------------------
 
-// // course: -->
+// course: -->
 // {
 //     "math",
 //     "t1",
@@ -78,3 +80,24 @@
 
 // -------------------------------------------------
 //  students/getall
+
+//----------------------------------------------------------------------------------------------------------------------
+// Date --> 9/9/21
+// required,
+// unique,
+// index
+// enum
+// populate
+// find({}).populate('studentId').limit().skip()
+
+// Promise.parallel
+// Promise.all
+
+// await user
+// await stue
+// await tea
+
+//Read all this topic 
+// [userres, stuere, testresult ]   = promiseall []
+
+// asdf

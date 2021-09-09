@@ -1,27 +1,31 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const env = require('dotenv');
+env.config();
 
 const app = express();
 
 app.use(express.urlencoded({extended:false}));
 app.use(express.json())
-const students = require('./routes/students');
-const courses = require('./routes/courses');
-const teachers = require('./routes/teachers');
+const {
+    studentsRoutes,
+    teachersRoutes,
+    coursesRoutes
+} = require('./routes')
 
-app.use('/students',students);
-app.use('/courses',courses);
-app.use('/teachers',teachers);
+app.use('/students',studentsRoutes);
+app.use('/courses',coursesRoutes);
+app.use('/teachers',teachersRoutes);
 
 app.get('/',(req,res)=>{
     res.status(200).json({
-        msg:"welcome to crud_API"
+        msg:"Home route"
     })
 });
 
-mongoose.connect("mongodb://127.0.0.1:27017/DB");
+mongoose.connect(process.env.DB);
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT,()=>{
     console.log("server is runnning on PORT "+PORT);

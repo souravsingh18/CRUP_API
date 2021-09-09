@@ -1,4 +1,7 @@
-const Courses = require('../models/courses');
+const {Courses,Students} = require('../models/index');
+// const Students = require('../models/students');
+
+const mongoose  = require('mongoose');
 
 exports.getAll = async (req,res)=>{
     try{
@@ -8,6 +11,28 @@ exports.getAll = async (req,res)=>{
         })
     }catch(err){
         console.log(err);
+    }
+}
+
+exports.getDetails = async (req,res)=>{
+    const {id} = req.params;
+    try{
+        const result = await Courses.aggregate([
+            {
+                $match: {
+                // In aggregation pipeline we use objectId, string id does not work here
+                _id: mongoose.Types.ObjectId(id)
+                }
+            }
+        ])
+        res.status(200).json({
+            result
+        })
+    }
+    catch(err){
+        res.status(200).json({
+            Error: "Internal server error"
+        })
     }
 }
 
@@ -37,6 +62,9 @@ exports.updateCourse = async (req,res)=>{
         } else {
             course.teacherId = req.body.teacherId;
             const result = await Courses.findOneAndUpdate({_id:id},course,{new: true});
+
+            Teachers.courseId.push(course.name);
+            await Teachers.findOneAndUpdate({_id:req.body.teacherId},Teachers,{new: true});
             res.status(200).json({
                 result
         })
@@ -48,7 +76,7 @@ exports.updateCourse = async (req,res)=>{
     }
 }
 
-exports.deleteCourse = async (req,res)=>{
+exports.deleteAll = async (req,res)=>{
     try {
         console.log(req.body);
         await Courses.deleteMany()
@@ -60,3 +88,17 @@ exports.deleteCourse = async (req,res)=>{
         console.log(error);
     }
 }
+
+exports.deleteOne = async (req,res)=>{
+    const {id} = req.params;
+    try {
+        await Courses.deleteOne({_id:id})
+    
+        res.status(200).json({
+            data: `${id} deleted successfully`
+        })
+    } catch (error) {
+        console.log(error);
+    }
+}
+
