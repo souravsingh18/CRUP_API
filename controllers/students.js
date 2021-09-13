@@ -30,6 +30,7 @@ exports.getStudentDetails = async (req,res)=>{
         //     {
         //         $lookup:{
         //             from: "courses",
+
         //             localField: "courseId",
         //             foreignField: "_id",
         //             as: "courseDetails"
@@ -66,6 +67,24 @@ exports.getStudentDetails = async (req,res)=>{
             error: "Internal server error"
         });
         console.log(err.message);
+    }
+}
+
+exports.getCounts = async (req,res)=>{
+    try{
+        const result = await Students.aggregate([
+            {
+                $count: "totalStudents"
+            }
+        ])
+        res.status(200).json({
+            result
+        })
+    }
+    catch(err){
+        res.status(200).json({
+            Error: "Internal server error"
+        })
     }
 }
 

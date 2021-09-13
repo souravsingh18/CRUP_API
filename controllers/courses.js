@@ -36,6 +36,24 @@ exports.getDetails = async (req,res)=>{
     }
 }
 
+exports.getCounts = async (req,res)=>{
+    try{
+        const result = await Courses.aggregate([
+            {
+                $count: "totalCourses"
+            }
+        ])
+        res.status(200).json({
+            result
+        })
+    }
+    catch(err){
+        res.status(200).json({
+            Error: "Internal server error"
+        })
+    }
+}
+
 exports.postCourse = async (req,res)=>{
     try{
         const result = await Courses.create(req.body);
@@ -50,6 +68,7 @@ exports.postCourse = async (req,res)=>{
 exports.updateCourse = async (req,res)=>{
     const { id } = req.params
     try {
+        const teacher = await Teachers.findById(req.body.teacherId);
         const course = await Courses.findById(id);
         const tId = await Courses.findOne({
             _id: id,
@@ -57,21 +76,22 @@ exports.updateCourse = async (req,res)=>{
         })
         if(tId) {
             res.status(200).json({
-                msg: `teacher with ${tId._id} id is already teaching this course`
+                msg: `teacher with Id ${tId._id} already teaching this course`
             });
         } else {
             course.teacherId = req.body.teacherId;
             const result = await Courses.findOneAndUpdate({_id:id},course,{new: true});
 
-            Teachers.courseId.push(course.name);
-            await Teachers.findOneAndUpdate({_id:req.body.teacherId},Teachers,{new: true});
+            teacher.courseId.push(course._id);
+            // {...teacher,[...teacher.courseId,course._id]}
+            await Teachers.findOneAndUpdate({_id:req.body.teacherId},teachers,{new: true});
             res.status(200).json({
                 result
         })
         }
     } catch (error) {
         res.status(500).json({
-            error: "Internal server error --> updateCourse"
+            error: "Internal server error"
         });
     }
 }

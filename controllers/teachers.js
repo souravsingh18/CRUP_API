@@ -44,6 +44,24 @@ exports.getTeacherDetails = async (req,res)=>{
     }
 }
 
+exports.getCounts = async (req,res)=>{
+    try{
+        const result = await Teachers.aggregate([
+            {
+                $count: "totalTeachers"
+            }
+        ])
+        res.status(200).json({
+            result
+        })
+    }
+    catch(err){
+        res.status(200).json({
+            Error: "Internal server error"
+        })
+    }
+}
+
 exports.postTeacher = async (req,res)=>{
     try{
         const result = await Teachers.create(req.body);
@@ -83,7 +101,7 @@ exports.deleteOne = async (req,res)=>{
     try{
         await Teachers.deleteOne({_id: id});
         res.status(200).json({
-            msg: `Id ${id} deleted successfully`
+            msg: `Id ${id} has been deleted successfully`
         })
     }catch(err){
         console.log(err);
