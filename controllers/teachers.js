@@ -1,12 +1,12 @@
 const mongoose  = require('mongoose');
-const {Teachers} = require('../models/index');
+const {Teachers, Courses} = require('../models/index');
 
 exports.getTeachers = async (req,res)=>{
     try{
         const result = await Teachers.find();
         if(result.length) {
             res.status(200).json({
-                data: result || {}
+                result
             })
         } else {
             res.status(500).json({
@@ -31,7 +31,7 @@ exports.getTeacherDetails = async (req,res)=>{
         ]);
         if(result.length) {
             res.status(200).json({
-                data: result || {}
+                result
             })
         } else {
             res.status(500).json({
@@ -63,10 +63,14 @@ exports.getCounts = async (req,res)=>{
 }
 
 exports.postTeacher = async (req,res)=>{
-    try{
+    try{ 
+        // const data = Teachers.body.push(req.body.courseId);
         const result = await Teachers.create(req.body);
+        if(req.body.courseId){
+            const course = await Courses.findById(req.body.courseId)
+        }
         res.status(200).json({
-            data: result
+            result
         })
     }catch(err){
         console.log(err);
@@ -76,9 +80,23 @@ exports.postTeacher = async (req,res)=>{
 exports.updateTeacher = async (req,res)=>{
     const {id} = req.parmas;
     try{
-        const result = await Teachers.findOneAndUpdate({_id: id},req.body,{new: true});
+        const course = await Courses.findById({_id: req.body.courseId});
+
+        const cId = await Students.findOne({
+            _id: id,
+            "courseId": req.body.courseId
+        })
+        if(cId){
+            res.status(200).json({
+                msg: "Already teaching this course"
+            });
+        }
+        else{
+            const result = await Teachers.findOneAndUpdate({_id: id},req.body,{new: true});
+        }
+
         res.status(200).json({
-            data: result
+            result
         })
     }catch(err){
         console.log(err);
