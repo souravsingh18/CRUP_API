@@ -1,7 +1,9 @@
 const { Students, Courses } = require("../models/index");
 const find = require("../service/studentFind");
+var ObjectId = require("mongodb").ObjectID;
 
 const mongoose = require("mongoose");
+const { findOne } = require("../models/students");
 
 exports.getStudents = async (req, res) => {
   try {
@@ -90,8 +92,16 @@ exports.getCounts = async (req, res) => {
 exports.postStudentData = async (req, res) => {
   //email and password(Authentication) are not implemented yet
   try {
-    console.log(req.body);
     const result = await Students.create(req.body);
+
+    if (result.courseId.length > 0) {
+      result.courseId.forEach(async (el) => {
+        const course = await Courses.findById(el);
+
+        course.studentId.push(result._id);
+        await Courses.findOneAndUpdate({ _id: el }, course, { new: true });
+      });
+    }
 
     res.status(200).json({
       result,
@@ -108,31 +118,36 @@ exports.updateStudent = async (req, res) => {
   const { id } = req.params;
   try {
     const student = await Students.findById(id);
-    const course = await Courses.findById(req.body.courseId);
+    let result;
+    if (req.body.courseId) {
+      student.courseId.forEach(async (cid) => {
+        req.body.courseId.forEach(async (cnid) => {
+          if (cid === cnid) {
+            res.status(200).json({
+              msg: `student with Id ${cnid} has already enrolled`,
+            });
+          } else {
+            student.courseId.push(cnid);
+            result = await Students.findOneAndUpdate({ _id: id }, student, {
+              new: true,
+            });
 
-    const cId = await Students.findOne({
-      _id: id,
-      courseId: req.body.courseId,
-    });
-    if (cId) {
-      res.status(200).json({
-        msg: "you already enrolled for this course",
-      });
-    } else {
-      student.courseId.push(req.body.courseId);
-      const result = await Students.findOneAndUpdate({ _id: id }, student, {
-        new: true,
-      });
-
-      course.studentId.push(student._id);
-      await Courses.findOneAndUpdate({ _id: req.body.courseId }, course, {
-        new: true,
-      });
-
-      res.status(200).json({
-        result,
+            const course = await Courses.findById(cnid);
+            course.studentId.push(id);
+            await Courses.findByIdAndUpdate({
+              _id: id,
+            });
+          }
+        });
       });
     }
+
+    result = await Students.findOneAndUpdate({ _id: id }, req.body, {
+      new: true,
+    });
+    res.status(200).json({
+      result,
+    });
   } catch (error) {
     res.status(500).json({
       error: "Internal server error",
@@ -159,6 +174,23 @@ exports.deleteAll = async (req, res) => {
 exports.deleteOne = async (req, res) => {
   const { id } = req.params;
   try {
+    const student = await Students.findById(id);
+    student.courseId.forEach(async (cid) => {
+      const course = await Courses.findById(cid);
+      const updatedCourse = course.studentId.filter(
+        (stid) => stid.toString() !== id
+      );
+      console.log({ ...course, studentId: updatedCourse });
+
+      //course is returing bunch of unnecessary data
+      await Courses.findByIdAndUpdate(
+        { _id: cid },
+        { studentId: updatedCourse },
+        {
+          new: true,
+        }
+      );
+    });
     await Students.deleteOne({ _id: id });
 
     res.status(200).json({
@@ -168,6 +200,6 @@ exports.deleteOne = async (req, res) => {
     res.status(500).json({
       error: "Internal server error",
     });
-    console.log(error.message);
+    console.log(error);
   }
 };

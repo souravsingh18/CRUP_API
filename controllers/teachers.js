@@ -119,11 +119,10 @@ exports.deleteTeachers = async (req, res) => {
 exports.deleteOne = async (req, res) => {
   const { id } = req.params;
   try {
-    const teacher = await Teachers.findById({ _id: id });
+    const teacher = await Teachers.findById(id);
 
     teacher.courseId.forEach((el) => {
-      const course = Courses.findOne({ _id: el });
-      Courses.findByIdAndUpdate({ _id: el }, { ...course, teacherId: null });
+      Courses.findByIdAndUpdate({ _id: el }, { teacherId: null });
     });
 
     await Teachers.deleteOne({ _id: id });
